@@ -1,7 +1,7 @@
 // package dump is a utility for printing memory allocation info using printf.
 //
 // Memory stats:
-// 	dump.Mem("some_func - BEFORE")
+//  dump.Mem("some_func - BEFORE")
 //  some_func()
 //  dump.Mem("some_func - AFTER")
 //
