@@ -6,11 +6,16 @@ import (
 	"math"
 	"runtime"
 	"sort"
+	"text/tabwriter"
 )
 
 // NewMemProf creates memory heap profile as would shown by pprof tool.
 // Code here is base largely on pprof package with lots of copy/paste.
 func NewMemProf(name string) *MemProf {
+	// NOTE: this does seem to be required for profiles to work
+	runtime.GC()
+	runtime.GC()
+
 	memProf := getHeapInternal()
 	allocObjects, allocBytes := scaleHeapSample(memProf.AllocObjects, memProf.AllocBytes, int64(runtime.MemProfileRate))
 	inUseObjects, inUseBytes := scaleHeapSample(memProf.InUseObjects(), memProf.InUseBytes(), int64(runtime.MemProfileRate))
@@ -23,7 +28,7 @@ func NewMemProf(name string) *MemProf {
 	}
 }
 
-func NewMemProfDiff(base *MemProf, next *MemProf) *MemProfDiff {
+func newMemProfDiff(base *MemProf, next *MemProf) *MemProfDiff {
 	return &MemProfDiff{
 		Base: base,
 		Next: next,
@@ -46,9 +51,11 @@ type MemProf struct {
 	InUseBytes   int64
 }
 
-// NewDiff creates new MemProfDiff with this MemProf as a base.
-func (m *MemProf) NewDiff(name string) *MemProfDiff {
-	return NewMemProfDiff(m, NewMemProf(name))
+// PrintDiff creates new snapshot diff and prints it. Here to avoid pitfalls of defer etc.
+func (m *MemProf) PrintDiff() {
+	name := fmt.Sprintf("%s - AFTER", m.Name)
+	diff := newMemProfDiff(m, NewMemProf(name))
+	diff.Print()
 }
 
 func (m *MemProf) String() string {
@@ -73,11 +80,13 @@ type MemProfDiff struct {
 
 func (m *MemProfDiff) String() string {
 	buffer := &bytes.Buffer{}
-	_, _ = fmt.Fprintf(buffer, "MEM PROF DIFF: %s -> %s\n", m.Base.Name, m.Next.Name)
-	_, _ = fmt.Fprintf(buffer, "    AllocObjects: %s -> %s -> %s\n", Meg(m.Base.AllocObjects), Meg(m.Next.AllocObjects), Meg(m.Delta.AllocObjects))
-	_, _ = fmt.Fprintf(buffer, "    AllocBytes  : %s -> %s -> %s\n", Meg(m.Base.AllocBytes), Meg(m.Next.AllocBytes), Meg(m.Delta.AllocBytes))
-	_, _ = fmt.Fprintf(buffer, "    InUseObjects: %s -> %s -> %s\n", Meg(m.Base.InUseObjects), Meg(m.Next.InUseObjects), Meg(m.Delta.InUseObjects))
-	_, _ = fmt.Fprintf(buffer, "    InUseBytes  : %s -> %s -> %s", Meg(m.Base.InUseBytes), Meg(m.Next.InUseBytes), Meg(m.Delta.InUseBytes))
+	tw := tabwriter.NewWriter(buffer, 1, 8, 1, '\t', 0)
+	_, _ = fmt.Fprintf(tw, "MEM PROF DIFF:    \t%s \t%s \t-> %s \t\n", m.Base.Name, m.Next.Name, "Delta")
+	_, _ = fmt.Fprintf(tw, "    AllocObjects: \t%s \t%s \t-> %s \t\n", Meg(m.Base.AllocObjects), Meg(m.Next.AllocObjects), Meg(m.Delta.AllocObjects))
+	_, _ = fmt.Fprintf(tw, "    AllocBytes  : \t%s \t%s \t-> %s \t\n", Meg(m.Base.AllocBytes), Meg(m.Next.AllocBytes), Meg(m.Delta.AllocBytes))
+	_, _ = fmt.Fprintf(tw, "    InUseObjects: \t%s \t%s \t-> %s \t\n", Meg(m.Base.InUseObjects), Meg(m.Next.InUseObjects), Meg(m.Delta.InUseObjects))
+	_, _ = fmt.Fprintf(tw, "    InUseBytes  : \t%s \t%s \t-> %s \t\n", Meg(m.Base.InUseBytes), Meg(m.Next.InUseBytes), Meg(m.Delta.InUseBytes))
+	tw.Flush()
 	return buffer.String()
 }
 

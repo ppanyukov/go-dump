@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"runtime"
+	"text/tabwriter"
 )
 
 func NewMemStats(name string) *MemStats {
@@ -17,7 +18,7 @@ func NewMemStats(name string) *MemStats {
 	}
 }
 
-func NewMemStatsDiff(base *MemStats, next *MemStats) *MemStatsDiff {
+func newMemStatsDiff(base *MemStats, next *MemStats) *MemStatsDiff {
 	return &MemStatsDiff{
 		Base: base,
 		Next: next,
@@ -35,9 +36,11 @@ type MemStats struct {
 	HeapObjects int64
 }
 
-// NewDiff creates new MemProfDiff with this MemProf as a base.
-func (m *MemStats) NewDiff(name string) *MemStatsDiff {
-	return NewMemStatsDiff(m, NewMemStats(name))
+// PrintDiff creates new snapshot diff and prints it. Here to avoid pitfalls of defer etc.
+func (m *MemStats) PrintDiff() {
+	name := fmt.Sprintf("%s - AFTER", m.Name)
+	diff := newMemStatsDiff(m, NewMemStats(name))
+	diff.Print()
 }
 
 func (m *MemStats) String() string {
@@ -59,11 +62,13 @@ type MemStatsDiff struct {
 }
 
 func (m *MemStatsDiff) String() string {
-	buf := &bytes.Buffer{}
-	_ = fmt.Sprint(buf, "MEM STATS DIFF: %s -> %s\n", m.Base.Name, m.Next.Name)
-	_ = fmt.Sprint(buf, "  HeapAlloc  : %s -> %s -> %s\n", Meg(m.Base.HeapAlloc), Meg(m.Next.HeapAlloc), Meg(m.Delta.HeapAlloc))
-	_ = fmt.Sprint(buf, "  HeapObjects: %s -> %s - %s", Meg(m.Base.HeapObjects), Meg(m.Next.HeapObjects), Meg(m.Delta.HeapObjects))
-	return buf.String()
+	buffer := &bytes.Buffer{}
+	tw := tabwriter.NewWriter(buffer, 1, 8, 1, '\t', 0)
+	_, _ = fmt.Fprintf(tw, "MEM PROF DIFF:   \t%s \t%s \t-> %s \t\n", m.Base.Name, m.Next.Name, "Delta")
+	_, _ = fmt.Fprintf(tw, "    HeapAlloc  : \t%s \t%s \t-> %s \t\n", Meg(m.Base.HeapAlloc), Meg(m.Next.HeapAlloc), Meg(m.Delta.HeapAlloc))
+	_, _ = fmt.Fprintf(tw, "    HeapObjects: \t%s \t%s \t-> %s \t\n", Meg(m.Base.HeapObjects), Meg(m.Next.HeapObjects), Meg(m.Delta.HeapObjects))
+	tw.Flush()
+	return buffer.String()
 }
 
 func (m *MemStatsDiff) Print() {

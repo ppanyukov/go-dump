@@ -10,7 +10,11 @@ import (
 
 // HeapDumpDir is the directory where the heap dump will be written. By default empty (current working dir).
 // Set to whatever is required.
-var HeapDumpDir = ""
+var HeapDumpDir = func() string {
+	// ignore error
+	dir, _ := os.Getwd()
+	return dir
+}()
 
 // WriteHeapDump is a convenience method to write a pprof heap dump which can be
 // examined with pprof tool. The file `{name}.pb.gz` is written to `HeapDumpDir`.
@@ -32,4 +36,3 @@ func WriteHeapDump(name string) {
 
 	fmt.Printf("WRITTEN HEAP DUMP TO %s\n", fName)
 }
-
