@@ -7,6 +7,7 @@ import (
 	"text/tabwriter"
 )
 
+// NewMemStats creates new snapshot of runtime.MemStats.
 func NewMemStats(name string) *MemStats {
 	stats := runtime.MemStats{}
 	runtime.ReadMemStats(&stats)
@@ -18,8 +19,8 @@ func NewMemStats(name string) *MemStats {
 	}
 }
 
-func newMemStatsDiff(base *MemStats, next *MemStats) *MemStatsDiff {
-	return &MemStatsDiff{
+func newMemStatsDiff(base *MemStats, next *MemStats) *memStatsDiff {
+	return &memStatsDiff{
 		Base: base,
 		Next: next,
 		Delta: &MemStats{
@@ -55,13 +56,13 @@ func (m *MemStats) Print() {
 	fmt.Printf("%s\n", m)
 }
 
-type MemStatsDiff struct {
+type memStatsDiff struct {
 	Base  *MemStats
 	Next  *MemStats
 	Delta *MemStats
 }
 
-func (m *MemStatsDiff) String() string {
+func (m *memStatsDiff) String() string {
 	buffer := &bytes.Buffer{}
 	tw := tabwriter.NewWriter(buffer, 1, 8, 1, '\t', 0)
 	_, _ = fmt.Fprintf(tw, "MEM STATS DIFF:   \t%s \t%s \t-> %s \t\n", m.Base.Name, m.Next.Name, "Delta")
@@ -71,6 +72,6 @@ func (m *MemStatsDiff) String() string {
 	return buffer.String()
 }
 
-func (m *MemStatsDiff) Print() {
+func (m *memStatsDiff) Print() {
 	fmt.Printf("%s\n", m)
 }

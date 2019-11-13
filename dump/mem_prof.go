@@ -9,8 +9,8 @@ import (
 	"text/tabwriter"
 )
 
-// NewMemProf creates memory heap profile as would shown by pprof tool.
-// Code here is base largely on pprof package with lots of copy/paste.
+// NewMemProf creates memory heap profile as would be shown by pprof tool.
+// Code here is based largely on pprof package with some copy/paste.
 func NewMemProf(name string) *MemProf {
 	// NOTE: this does seem to be required for profiles to work
 	runtime.GC()
@@ -28,8 +28,8 @@ func NewMemProf(name string) *MemProf {
 	}
 }
 
-func newMemProfDiff(base *MemProf, next *MemProf) *MemProfDiff {
-	return &MemProfDiff{
+func newMemProfDiff(base *MemProf, next *MemProf) *memProfDiff {
+	return &memProfDiff{
 		Base: base,
 		Next: next,
 		Delta: &MemProf{
@@ -51,7 +51,7 @@ type MemProf struct {
 	InUseBytes   int64
 }
 
-// PrintDiff creates new snapshot diff and prints it. Here to avoid pitfalls of defer etc.
+// PrintDiff creates new snapshot and prints the diff against it.
 func (m *MemProf) PrintDiff() {
 	name := fmt.Sprintf("%s - AFTER", m.Name)
 	diff := newMemProfDiff(m, NewMemProf(name))
@@ -72,13 +72,13 @@ func (m *MemProf) Print() {
 	fmt.Printf("%s\n", m)
 }
 
-type MemProfDiff struct {
+type memProfDiff struct {
 	Base  *MemProf
 	Next  *MemProf
 	Delta *MemProf
 }
 
-func (m *MemProfDiff) String() string {
+func (m *memProfDiff) String() string {
 	buffer := &bytes.Buffer{}
 	tw := tabwriter.NewWriter(buffer, 1, 8, 1, '\t', 0)
 	_, _ = fmt.Fprintf(tw, "MEM PROF DIFF:    \t%s \t%s \t-> %s \t\n", m.Base.Name, m.Next.Name, "Delta")
@@ -90,7 +90,7 @@ func (m *MemProfDiff) String() string {
 	return buffer.String()
 }
 
-func (m *MemProfDiff) Print() {
+func (m *memProfDiff) Print() {
 	fmt.Printf("%s\n", m)
 }
 
