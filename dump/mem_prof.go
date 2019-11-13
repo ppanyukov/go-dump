@@ -82,10 +82,10 @@ func (m *MemProfDiff) String() string {
 	buffer := &bytes.Buffer{}
 	tw := tabwriter.NewWriter(buffer, 1, 8, 1, '\t', 0)
 	_, _ = fmt.Fprintf(tw, "MEM PROF DIFF:    \t%s \t%s \t-> %s \t\n", m.Base.Name, m.Next.Name, "Delta")
-	_, _ = fmt.Fprintf(tw, "    AllocObjects: \t%s \t%s \t-> %s \t\n", Meg(m.Base.AllocObjects), Meg(m.Next.AllocObjects), Meg(m.Delta.AllocObjects))
-	_, _ = fmt.Fprintf(tw, "    AllocBytes  : \t%s \t%s \t-> %s \t\n", Meg(m.Base.AllocBytes), Meg(m.Next.AllocBytes), Meg(m.Delta.AllocBytes))
-	_, _ = fmt.Fprintf(tw, "    InUseObjects: \t%s \t%s \t-> %s \t\n", Meg(m.Base.InUseObjects), Meg(m.Next.InUseObjects), Meg(m.Delta.InUseObjects))
 	_, _ = fmt.Fprintf(tw, "    InUseBytes  : \t%s \t%s \t-> %s \t\n", Meg(m.Base.InUseBytes), Meg(m.Next.InUseBytes), Meg(m.Delta.InUseBytes))
+	_, _ = fmt.Fprintf(tw, "    InUseObjects: \t%s \t%s \t-> %s \t\n", Meg(m.Base.InUseObjects), Meg(m.Next.InUseObjects), Meg(m.Delta.InUseObjects))
+	_, _ = fmt.Fprintf(tw, "    AllocBytes  : \t%s \t%s \t-> %s \t\n", Meg(m.Base.AllocBytes), Meg(m.Next.AllocBytes), Meg(m.Delta.AllocBytes))
+	_, _ = fmt.Fprintf(tw, "    AllocObjects: \t%s \t%s \t-> %s \t\n", Meg(m.Base.AllocObjects), Meg(m.Next.AllocObjects), Meg(m.Delta.AllocObjects))
 	tw.Flush()
 	return buffer.String()
 }
