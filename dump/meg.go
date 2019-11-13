@@ -5,9 +5,9 @@ import (
 	"math"
 )
 
-// Meg prints out a number in human readable form, e.g. 20, 20K, 20M, 20G.
+// meg prints out a number in human readable form, e.g. 20, 20K, 20M, 20G.
 // Returns "NaN" if the input is not a number (int, float).
-func Meg(n interface{}) string {
+func meg(n interface{}) string {
 	const (
 		kilo float64 = 1024.0
 		mega float64 = 1024.0 * kilo
