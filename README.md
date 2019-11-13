@@ -10,7 +10,7 @@ Collecting and printing memory stats and profile:
 
 - **WriteHeapDump()**: Write pprof heap profiles at any point in code.
 
-Whatever the metric, it will be only an approximation, it will be 100% accurate.
+Whatever the metric, it will be only an approximation, it will NOT be 100% accurate.
 
 
 Sample usage:
@@ -62,7 +62,7 @@ WRITTEN HEAP DUMP TO /Users/philip/thanos/github.com/ppanyukov/go-dump/heap-exam
 ```
 
 The size of `1,000,000` `int64` values is `800MB`, and can be seen `MemProf` reports this
-quite close to this number. The MemStats are slightly off with its `963.30M` as this
+quite close to this number. The `MemStats` are slightly off with its `963.30M` as this
 number includes objects not yet collected by GC.
 
 To use pprof tool to see allocations use this command:
