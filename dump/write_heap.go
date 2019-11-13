@@ -16,13 +16,6 @@ var heapDumpDir = func() string {
 	return dir
 }()
 
-// SetHeapDumpDir sets the directory where pprof heap dumps will be written.
-// By default it is set to current working directory which should be fine for
-// most use cases.
-func SetHeapDumpDir(dir string) {
-	heapDumpDir = dir
-}
-
 // WriteHeapDump is a convenience method to write a pprof heap dump which can be
 // examined with pprof tool. The file `{name}.pb.gz` is written to `heapDumpDir`.
 //
