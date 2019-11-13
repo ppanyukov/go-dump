@@ -1,36 +1,92 @@
 # go-dump
-Quick hack for dumping memory stats to stderr for Go
+
+Utility for printing memory allocations info using printf. This allows instrumentation of code for memory allocation analysis with very little effort.
+
+Collecting and printing memory stats and profile:
+
+- **MemStats**: Uses `runtime.ReadMemStats`. The numbers shown include "garbage" not yet collected by GC according to Go docs.
+
+- **MemProf**: Uses code from pprof package to show stats as would be shown by pprof tool. The pprof itself uses some probabilistic approach. Hopefully this is more accurate than `MemStats` and do not include "garbage".
+
+- **WriteHeapDump()**: Write pprof heap profiles at any point in code.
+
+Whatever the metric, it will be only an approximation, it will be 100% accurate.
 
 
-Instrument code like so:
- ```
-dump.Mem("some_func - BEFORE")
-some_func()
-dump.Mem("some_func - AFTER")
+Sample usage:
+
+```golang
+func Example() []int64 {
+	// Write pprof heap profile at the start and end of function
+	dump.WriteHeapDump(fmt.Sprintf("heap-example-before"))
+	defer dump.WriteHeapDump(fmt.Sprintf("heap-example-after"))
+
+	// Take a snapshot at the start of a function
+	// Capture and print deltas at the end
+	memProf := dump.NewMemProf("example")
+	defer memProf.PrintDiff()
+
+	// Similar for memStats
+	memStats := dump.NewMemStats("example")
+	defer memStats.PrintDiff()
+
+	// allocate memory
+	allocateMem := func () []int64 {
+		return make([]int64, 100000)
+	}
+
+	var result []int64
+	for i := 0; i < 1000; i++{
+		result = append(result, allocateMem()...)
+	}
+
+	return result
+}
 ```
 
-Output is like this: 
- ```
-2019/10/10 14:37:48 some_func - BEFORE
-2019/10/10 14:37:48   HeapAlloc  : 1.99G, delta: 408.46M
-2019/10/10 14:37:48   HeapObjects: 18.36M, delta: 4.58M
-2019/10/10 14:37:51 some_func - AFTER
-2019/10/10 14:37:51   HeapAlloc  : 3.15G, delta: 1.15G
-2019/10/10 14:37:51   HeapObjects: 22.98M, delta: 4.62M
-```
-
-Utility methods:
+This will produce results similar to this:
 
 ```
-# Print number in human readable form
-int b = 10
-int k = 10000
-int m = 10000000
-int g = 10000000000
+WRITTEN HEAP DUMP TO /Users/philip/thanos/github.com/ppanyukov/go-dump/heap-example-before.pb.gz
+MEM STATS DIFF:   	example 	example - AFTER 	-> Delta
+	HeapAlloc  : 	219.76K 	963.52M 		-> 963.30M
+	HeapObjects: 	203 		408 			-> 205
 
-dump.Meg(b) // 10
-dump.Meg(k) // 10K
-dump.Meg(m) // 10M
-dump.Meg(g) // 10G
+MEM PROF DIFF:    	example 	example - AFTER 	-> Delta
+	InUseBytes  : 	0 		816.39M 		-> 816.39M
+	InUseObjects: 	0 		1 			-> 1
+	AllocBytes  : 	1.26M 		4.69G 			-> 4.69G
+	AllocObjects: 	6 		808 			-> 802
+
+WRITTEN HEAP DUMP TO /Users/philip/thanos/github.com/ppanyukov/go-dump/heap-example-after.pb.gz
+```
+
+The size of `1,000,000` `int64` values is `800MB`, and can be seen `MemProf` reports this
+quite close to this number. The MemStats are slightly off with its `963.30M` as this
+number includes objects not yet collected by GC.
+
+To use pprof tool to see allocations use this command:
+
+	go tool pprof \
+		-sample_index=inuse_space \
+		-edgefraction=0 \
+		-functions \
+		-http=:8081 \
+		-base /Users/philip/thanos/github.com/ppanyukov/go-dump/heap-example-before.pb.gz \
+ 		/Users/philip/thanos/github.com/ppanyukov/go-dump/heap-example-after.pb.gz
+
+This would report figures like so:
+
+	Showing nodes accounting for 778.57MB, 100% of 778.57MB total
+
+Also close to `800MB`.
+
+Using pprof allows us to look where in code we allocate those bytes, and predictably enough it shows our array allocation:
+
+```
+28            .          .           	var result []int64 
+29            .          .           	for i := 0; i < 1000; i++{ 
+30     778.57MB   778.57MB           		result = append(result, allocateMem()...) 
+31            .          .           	} 
 ```
 
