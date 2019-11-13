@@ -3,21 +3,14 @@ package dump is a utility for printing memory allocations info using printf.
 This allows instrumentation of code for memory allocation analysis with very
 little effort.
 
-Collecting and printing memory stats and profile:
+- MemStats: Uses `runtime.ReadMemStats`. The numbers shown include "garbage" not
+yet collected by GC according to Go docs.
 
-- MemStats:
-  Uses `runtime.ReadMemStats`. The numbers shown include "garbage" not
-  yet collected by GC according to Go docs.
+- MemProf: Uses code from pprof package to show stats as would be
+shown by pprof tool. The pprof itself uses some probabilistic approach.
+Hopefully this is more accurate than `MemStats` and do not include "garbage".
 
-- MemProf:
-  Uses code from pprof package to show stats as would be
-  shown by pprof tool. The pprof itself uses some probabilistic approach.
-  Hopefully this is more accurate than `MemStats` and do not include "garbage".
-
-Writing pprof heap profiles in code:
-
-- WriteHeapDump()
-
+- WriteHeapDump():  Write pprof heap profiles at any point in code.
 
 Sample usage:
 
