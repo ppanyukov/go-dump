@@ -64,7 +64,7 @@ type MemStatsDiff struct {
 func (m *MemStatsDiff) String() string {
 	buffer := &bytes.Buffer{}
 	tw := tabwriter.NewWriter(buffer, 1, 8, 1, '\t', 0)
-	_, _ = fmt.Fprintf(tw, "MEM PROF DIFF:   \t%s \t%s \t-> %s \t\n", m.Base.Name, m.Next.Name, "Delta")
+	_, _ = fmt.Fprintf(tw, "MEM STATS DIFF:   \t%s \t%s \t-> %s \t\n", m.Base.Name, m.Next.Name, "Delta")
 	_, _ = fmt.Fprintf(tw, "    HeapAlloc  : \t%s \t%s \t-> %s \t\n", Meg(m.Base.HeapAlloc), Meg(m.Next.HeapAlloc), Meg(m.Delta.HeapAlloc))
 	_, _ = fmt.Fprintf(tw, "    HeapObjects: \t%s \t%s \t-> %s \t\n", Meg(m.Base.HeapObjects), Meg(m.Next.HeapObjects), Meg(m.Delta.HeapObjects))
 	tw.Flush()
