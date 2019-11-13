@@ -5,14 +5,15 @@ import (
 	"math"
 )
 
-// meg prints out a number in human readable form, e.g. 20, 20K, 20M, 20G.
+// meg prints out a number in human readable form, e.g. 20B, 20KB, 20MB, 20GB.
 // Returns "NaN" if the input is not a number (int, float).
+// Note these values are MB, not MiB.
 func meg(n interface{}) string {
 	const (
-		kilo float64 = 1024.0
-		mega float64 = 1024.0 * kilo
-		giga float64 = 1024.0 * mega
-		tera float64 = 1024.0 * giga
+		kilo float64 = 1000.0
+		mega float64 = 1000.0 * kilo
+		giga float64 = 1000.0 * mega
+		tera float64 = 1000.0 * giga
 	)
 
 	megInt64 := func(x float64) string {
