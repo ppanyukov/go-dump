@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"runtime"
 	"runtime/pprof"
 )
 
@@ -40,12 +39,11 @@ func WriteHeapDump(name string) {
 
 	f, _ := os.Create(fName)
 	defer f.Close()
-	runtime.GC()
 	err := pprof.WriteHeapProfile(f)
 	if err != nil {
 		fmt.Printf("ERROR WRITING HEAP DUMP TO %s: %v\n", fName, err)
 		return
 	}
 
-	fmt.Printf("WRITTEN HEAP DUMP TO %s\n", fName)
+	fmt.Printf("(NO GC) WRITTEN HEAP DUMP TO %s\n", fName)
 }
